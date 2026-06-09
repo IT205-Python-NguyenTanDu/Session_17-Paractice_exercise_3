@@ -1,0 +1,123 @@
+PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG ESPORTS MATCHMAKER
+
+1. Sự khác biệt giữa itertools.combinations và itertools.permutations
+
+itertools.combinations() dùng để sinh ra các tổ hợp phần tử mà không quan tâm đến thứ tự xuất hiện.
+
+Ví dụ:
+
+Danh sách đội:
+[T1, GEN.G, WBG]
+
+combinations(..., 2) sinh ra:
+
+(T1, GEN.G)
+
+(T1, WBG)
+
+(GEN.G, WBG)
+
+Trong trường hợp này:
+
+T1 gặp GEN.G được xem là giống GEN.G gặp T1.
+
+Do đó chỉ xuất hiện một lần.
+
+Ngược lại, itertools.permutations() dùng để sinh ra các chỉnh hợp có xét thứ tự.
+
+Ví dụ:
+
+permutations(..., 2) sinh ra:
+
+(T1, GEN.G)
+
+(GEN.G, T1)
+
+(T1, WBG)
+
+(WBG, T1)
+
+(GEN.G, WBG)
+
+(WBG, GEN.G)
+
+Số lượng kết quả nhiều hơn vì A đấu B và B đấu A được xem là hai trường hợp khác nhau.
+
+Đối với giải đấu vòng tròn một lượt, mỗi cặp đội chỉ gặp nhau đúng một lần. Vì vậy:
+
+T1 vs GEN.G
+
+và
+
+GEN.G vs T1
+
+là cùng một trận đấu.
+
+Do đó bắt buộc phải sử dụng combinations() thay vì permutations() để tránh tạo các trận đấu trùng lặp.
+
+2. Luồng thuật toán sinh Match ID
+
+Bước 1:
+Duyệt từng trận đấu trong danh sách lịch thi đấu.
+
+Ví dụ:
+
+T1 vs GEN.G
+
+Bước 2:
+Tách tên hai đội bằng:
+
+split(" vs ")
+
+Kết quả:
+
+T1
+
+GEN.G
+
+Bước 3:
+Lấy tối đa 3 ký tự đầu tiên của mỗi đội:
+
+team_a[0:3]
+
+team_b[0:3]
+
+Nếu tên đội ngắn hơn 3 ký tự thì sử dụng F-String Padding:
+
+f"{team_code:X<3}"
+
+Ví dụ:
+
+"T1" → "T1X"
+
+"BLG" → "BLG"
+
+Bước 4:
+Đánh số thứ tự trận đấu.
+
+Sử dụng F-String:
+
+f"{match_number:02d}"
+
+Kết quả:
+
+1 → 01
+
+2 → 02
+
+9 → 09
+
+10 → 10
+
+Bước 5:
+Ghép thành Match ID hoàn chỉnh.
+
+Ví dụ:
+
+M01-T1X-GEN
+
+M02-T1X-WBG
+
+M06-WBG-BLG
+
+Nhờ kỹ thuật padding và định dạng số bằng F-String, toàn bộ Match ID sẽ có cấu trúc đồng nhất và dễ quản lý.
