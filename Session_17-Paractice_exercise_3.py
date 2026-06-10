@@ -1,66 +1,51 @@
+import itertools
+
 teams_list = []
 match_schedule = []
 
 
 def input_teams():
     """
-    Input and normalize team names.
-
-    Parameters:
-        None
+    Nhập và chuẩn hóa danh sách đội tuyển.
 
     Returns:
-        list: List of unique team names.
+        None
     """
     global teams_list
 
     print("\n--- NHẬP DANH SÁCH ---")
 
-    while True:
-        team_input = input(
-            "Nhập các đội (cách nhau bởi dấu phẩy): "
-        ).strip()
+    raw_input_data = input(
+        "Nhập các đội (cách nhau bởi dấu phẩy): "
+    )
 
-        if team_input == "":
-            print("Lỗi: Không được để trống danh sách đội.")
-            continue
+    teams = [
+        team.strip().upper()
+        for team in raw_input_data.split(",")
+        if team.strip()
+    ]
 
-        raw_teams = team_input.split(",")
+    unique_teams = []
+    seen = set()
 
-        normalized_teams = [
-            team.strip().upper()
-            for team in raw_teams
-            if team.strip() != ""
-        ]
+    for team in teams:
+        if team not in seen:
+            unique_teams.append(team)
+            seen.add(team)
 
-        if len(normalized_teams) == 0:
-            print("Lỗi: Không có đội hợp lệ.")
-            continue
+    teams_list = unique_teams
 
-        unique_teams = []
-
-        for team_name in normalized_teams:
-            if team_name not in unique_teams:
-                unique_teams.append(team_name)
-
-        teams_list = unique_teams
-
-        print(
-            f"Đã ghi nhận {len(teams_list)} đội: {teams_list}"
-        )
-
-        return teams_list
+    print(
+        f"Đã ghi nhận {len(teams_list)} đội: {teams_list}"
+    )
 
 
-def generate_schedule():
+def generate_match_schedule():
     """
-    Generate round-robin match schedule.
-
-    Parameters:
-        None
+    Tạo lịch thi đấu vòng tròn một lượt.
 
     Returns:
-        list: List of matches in format 'TEAM A vs TEAM B'.
+        list: Danh sách trận đấu.
     """
     global match_schedule
 
@@ -70,34 +55,23 @@ def generate_schedule():
         )
         return []
 
-    match_schedule = []
+    matches = itertools.combinations(
+        teams_list,
+        2
+    )
 
-    first_index = 0
-
-    while first_index < len(teams_list) - 1:
-
-        second_index = first_index + 1
-
-        while second_index < len(teams_list):
-
-            match_text = (
-                f"{teams_list[first_index]} vs "
-                f"{teams_list[second_index]}"
-            )
-
-            match_schedule.append(match_text)
-
-            second_index += 1
-
-        first_index += 1
+    match_schedule = [
+        f"{team_a} vs {team_b}"
+        for team_a, team_b in matches
+    ]
 
     print("\n--- LỊCH THI ĐẤU VÒNG BẢNG ---")
 
-    for index, match_text in enumerate(
-            match_schedule,
-            start=1
+    for index, match in enumerate(
+        match_schedule,
+        start=1
     ):
-        print(f"{index}. {match_text}")
+        print(f"{index}. {match}")
 
     print(
         f"Tổng số trận đấu: {len(match_schedule)} trận."
@@ -108,97 +82,35 @@ def generate_schedule():
 
 def generate_match_ids():
     """
-    Generate match IDs from schedule.
-
-    Parameters:
-        None
+    Sinh Match ID cho toàn bộ lịch thi đấu.
 
     Returns:
-        list: List of generated match IDs.
+        None
     """
-    if len(match_schedule) == 0:
+    if not match_schedule:
         print(
             "Vui lòng tạo lịch thi đấu trước khi sinh mã ID."
         )
-        return []
+        return
 
     print("\n--- MÃ TRẬN ĐẤU (MATCH ID) ---")
 
-    match_ids = []
-
-    for match_number, match_text in enumerate(
-            match_schedule,
-            start=1
+    for index, match in enumerate(
+        match_schedule,
+        start=1
     ):
-        teams = match_text.split(" vs ")
+        team_a, team_b = match.split(" vs ")
 
-        team_a = teams[0]
-        team_b = teams[1]
-
-        team_a_code = f"{team_a[0:3]:X<3}"
-        team_b_code = f"{team_b[0:3]:X<3}"
+        code_a = f"{team_a[:3]:X<3}"
+        code_b = f"{team_b[:3]:X<3}"
 
         match_id = (
-            f"M{match_number:02d}-"
-            f"{team_a_code}-"
-            f"{team_b_code}"
+            f"M{index:02d}-{code_a}-{code_b}"
         )
-
-        match_ids.append(match_id)
 
         print(
-            f"Trận {match_number} "
-            f"({match_text}) -> ID: {match_id}"
+            f"Trận {index:<2} ({match:<20}) -> ID: {match_id}"
         )
-
-    return match_ids
 
 
 def display_menu():
-    """
-    Display application menu.
-
-    Parameters:
-        None
-
-    Returns:
-        None
-    """
-    print(
-        "\n============= ESPORTS MATCHMAKER ============="
-    )
-    print("1. Nhập danh sách Đội tuyển")
-    print("2. Tạo lịch thi đấu")
-    print("3. Tạo mã trận đấu tự động")
-    print("4. Đóng hệ thống")
-    print(
-        "=============================================="
-    )
-
-
-while True:
-
-    display_menu()
-
-    choice = input(
-        "Chọn chức năng (1-4): "
-    ).strip()
-
-    if choice == "1":
-        input_teams()
-
-    elif choice == "2":
-        generate_schedule()
-
-    elif choice == "3":
-        generate_match_ids()
-
-    elif choice == "4":
-        print("Đóng hệ thống thành công.")
-        break
-
-    else:
-        print(
-            "Lựa chọn không hợp lệ. "
-            "Vui lòng nhập từ 1 đến 4."
-        )
